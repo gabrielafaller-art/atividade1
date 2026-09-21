@@ -1,0 +1,2384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Minha Planilha</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #202124;
+    background: #fff;
+    overflow: hidden;
+}
+
+/* =========================
+   TOPO
+========================= */
+
+.topbar {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    border-bottom: 1px solid #dadce0;
+    gap: 18px;
+}
+
+.logo {
+    font-size: 24px;
+    color: #188038;
+    font-weight: bold;
+}
+
+.file-name {
+    font-size: 18px;
+    border: 1px solid transparent;
+    padding: 6px 8px;
+    border-radius: 4px;
+}
+
+.file-name:hover {
+    border-color: #dadce0;
+}
+
+.top-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+}
+
+button {
+    border: 1px solid #dadce0;
+    background: white;
+    padding: 7px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #f1f3f4;
+}
+
+/* =========================
+   MENU
+========================= */
+
+.menu {
+    height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 20px;
+    border-bottom: 1px solid #dadce0;
+    font-size: 14px;
+}
+
+.menu span {
+    cursor: pointer;
+}
+
+.menu span:hover {
+    background: #f1f3f4;
+}
+
+/* =========================
+   TOOLBAR
+========================= */
+
+.toolbar {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 10px;
+    border-bottom: 1px solid #dadce0;
+}
+
+.toolbar button {
+    border: none;
+    font-size: 15px;
+    min-width: 34px;
+}
+
+.toolbar select {
+    border: 1px solid transparent;
+    padding: 5px;
+}
+
+/* =========================
+   FORMULA BAR
+========================= */
+
+.formula-bar {
+    height: 42px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #dadce0;
+}
+
+.name-box {
+    width: 80px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid #dadce0;
+    font-size: 13px;
+}
+
+.fx {
+    width: 45px;
+    text-align: center;
+    font-style: italic;
+    color: #5f6368;
+}
+
+.formula-input {
+    flex: 1;
+    height: 100%;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    padding: 0 10px;
+}
+
+/* =========================
+   PLANILHA
+========================= */
+
+.sheet-wrapper {
+    height: calc(100vh - 238px);
+    overflow: auto;
+}
+
+.sheet {
+    display: grid;
+    grid-template-columns: 50px repeat(26, 120px);
+    grid-auto-rows: 30px;
+    width: max-content;
+}
+
+.corner {
+    background: #f8f9fa;
+    border-right: 1px solid #dadce0;
+    border-bottom: 1px solid #dadce0;
+    position: sticky;
+    left: 0;
+    top: 0;
+    z-index: 5;
+}
+
+.column-header {
+    background: #f8f9fa;
+    border-right: 1px solid #dadce0;
+    border-bottom: 1px solid #dadce0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 4;
+}
+
+.row-header {
+    background: #f8f9fa;
+    border-right: 1px solid #dadce0;
+    border-bottom: 1px solid #dadce0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    position: sticky;
+    left: 0;
+    z-index: 3;
+}
+
+.cell {
+    border-right: 1px solid #dadce0;
+    border-bottom: 1px solid #dadce0;
+    padding: 5px 7px;
+    outline: none;
+    white-space: nowrap;
+    overflow: hidden;
+    background: white;
+}
+
+.cell.selected {
+    outline: 2px solid #1a73e8;
+    outline-offset: -2px;
+    z-index: 2;
+}
+
+.cell:focus {
+    outline: 2px solid #1a73e8;
+}
+
+/* =========================
+   ABAS
+========================= */
+
+.tabs {
+    height: 42px;
+    border-top: 1px solid #dadce0;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    gap: 4px;
+    background: #f8f9fa;
+}
+
+.tab {
+    height: 34px;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 5px 5px 0 0;
+}
+
+.tab.active {
+    background: white;
+    border-bottom: 3px solid #188038;
+    font-weight: bold;
+}
+
+/* =========================
+   STATUS
+========================= */
+
+.status {
+    position: fixed;
+    bottom: 0;
+    right: 10px;
+    font-size: 12px;
+    color: #5f6368;
+    padding: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- TOPO -->
+<header class="topbar">
+
+    <div class="logo">▦</div>
+
+    <div
+        class="file-name"
+        contenteditable="true"
+        id="fileName">
+        Minha Planilha
+    </div>
+
+    <div class="top-actions">
+        <button onclick="saveFile()">Salvar</button>
+        <button onclick="exportJSON()">Exportar</button>
+        <button onclick="importJSON()">Importar</button>
+    </div>
+
+</header>
+
+
+<!-- MENU -->
+<nav class="menu">
+    <span onclick="newSpreadsheet()">Arquivo</span>
+    <span>Editar</span>
+    <span>Visualizar</span>
+    <span>Inserir</span>
+    <span>Formatar</span>
+    <span>Dados</span>
+    <span>Ferramentas</span>
+</nav>
+
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+
+    <button onclick="undo()">↶</button>
+    <button onclick="redo()">↷</button>
+
+    <button onclick="formatCell('bold')"><b>B</b></button>
+    <button onclick="formatCell('italic')"><i>I</i></button>
+
+    <button onclick="alignCell('left')">☰</button>
+    <button onclick="alignCell('center')">≡</button>
+    <button onclick="alignCell('right')">☷</button>
+
+    <button onclick="addRow()">+ Linha</button>
+    <button onclick="addColumn()">+ Coluna</button>
+
+    <button onclick="clearCell()">Limpar</button>
+
+</div>
+
+
+<!-- BARRA DE FÓRMULAS -->
+<div class="formula-bar">
+
+    <div class="name-box" id="nameBox">A1</div>
+
+    <div class="fx">fx</div>
+
+    <input
+        class="formula-input"
+        id="formulaInput"
+        placeholder="Digite um valor ou fórmula..."
+    >
+
+</div>
+
+
+<!-- PLANILHA -->
+<div class="sheet-wrapper">
+
+    <div class="sheet" id="sheet"></div>
+
+</div>
+
+
+<!-- ABAS -->
+<div class="tabs">
+
+    <div class="tab active">
+        Planilha 1
+    </div>
+
+    <button onclick="addSheet()">
+        +
+    </button>
+
+</div>
+
+
+<div class="status" id="status">
+    Salvo localmente
+</div>
+
+
+<script>
+
+/* ==========================================================
+   CONFIGURAÇÃO
+========================================================== */
+
+let rows = 100;
+let cols = 26;
+
+let selectedCell = null;
+
+let history = [];
+let historyIndex = -1;
+
+
+/* ==========================================================
+   CONVERSÃO DE COLUNA
+========================================================== */
+
+function columnName(index) {
+
+    let name = "";
+
+    index++;
+
+    while (index > 0) {
+
+        let remainder = (index - 1) % 26;
+
+        name = String.fromCharCode(65 + remainder) + name;
+
+        index = Math.floor((index - 1) / 26);
+    }
+
+    return name;
+}
+
+
+/* ==========================================================
+   CRIAR PLANILHA
+========================================================== */
+
+function createSheet() {
+
+    const sheet = document.getElementById("sheet");
+
+    sheet.innerHTML = "";
+
+    // canto superior
+    const corner = document.createElement("div");
+
+    corner.className = "corner";
+
+    sheet.appendChild(corner);
+
+
+    // cabeçalhos
+    for (let c = 0; c < cols; c++) {
+
+        const header = document.createElement("div");
+
+        header.className = "column-header";
+
+        header.textContent = columnName(c);
+
+        sheet.appendChild(header);
+    }
+
+
+    // linhas
+    for (let r = 0; r < rows; r++) {
+
+        const rowHeader = document.createElement("div");
+
+        rowHeader.className = "row-header";
+
+        rowHeader.textContent = r + 1;
+
+        sheet.appendChild(rowHeader);
+
+
+        for (let c = 0; c < cols; c++) {
+
+            createCell(r, c);
+        }
+    }
+}
+
+
+/* ==========================================================
+   CRIAR CÉLULA
+========================================================== */
+
+function createCell(row, col) {
+
+    const cell = document.createElement("div");
+
+    cell.className = "cell";
+
+    cell.contentEditable = true;
+
+    cell.dataset.row = row;
+
+    cell.dataset.col = col;
+
+    cell.dataset.address =
+        columnName(col) + (row + 1);
+
+
+    cell.addEventListener("click", () => {
+
+        selectCell(cell);
+
+    });
+
+
+    cell.addEventListener("input", () => {
+
+        updateFormulaBar(cell);
+
+        saveLocal();
+
+    });
+
+
+    cell.addEventListener("keydown", handleKey);
+
+
+    document.getElementById("sheet").appendChild(cell);
+}
+
+
+/* ==========================================================
+   SELECIONAR CÉLULA
+========================================================== */
+
+function selectCell(cell) {
+
+    document.querySelectorAll(".cell.selected")
+        .forEach(c => c.classList.remove("selected"));
+
+    cell.classList.add("selected");
+
+    selectedCell = cell;
+
+    document.getElementById("nameBox").textContent =
+        cell.dataset.address;
+
+    updateFormulaBar(cell);
+}
+
+
+/* ==========================================================
+   BARRA DE FÓRMULA
+========================================================== */
+
+function updateFormulaBar(cell) {
+
+    document.getElementById("formulaInput").value =
+        cell.dataset.formula || cell.innerText;
+}
+
+
+document
+.getElementById("formulaInput")
+.addEventListener("keydown", function(e) {
+
+    if (e.key === "Enter" && selectedCell) {
+
+        setCellValue(
+            selectedCell,
+            this.value
+        );
+
+        selectedCell.focus();
+    }
+
+});
+
+
+/* ==========================================================
+   VALOR DA CÉLULA
+========================================================== */
+
+function setCellValue(cell, value) {
+
+    cell.dataset.formula =
+        value.startsWith("=") ? value : "";
+
+    if (value.startsWith("=")) {
+
+        cell.innerText =
+            calculateFormula(value);
+
+    } else {
+
+        cell.innerText = value;
+    }
+
+    saveLocal();
+}
+
+
+/* ==========================================================
+   FÓRMULAS
+========================================================== */
+
+function calculateFormula(formula) {
+
+    let expression =
+        formula.substring(1);
+
+    /*
+       SUM(A1:A5)
+    */
+
+    expression = expression.replace(
+        /SUM\(([A-Z]+)(\d+):([A-Z]+)(\d+)\)/gi,
+
+        function(_, c1, r1, c2, r2) {
+
+            const startCol =
+                columnIndex(c1);
+
+            const endCol =
+                columnIndex(c2);
+
+            let total = 0;
+
+            for (
+                let r = Number(r1);
+                r <= Number(r2);
+                r++
+            ) {
+
+                for (
+                    let c = startCol;
+                    c <= endCol;
+                    c++
+                ) {
+
+                    const cell =
+                        getCell(r - 1, c);
+
+                    const value =
+                        parseFloat(cell.innerText);
+
+                    if (!isNaN(value))
+                        total += value;
+                }
+            }
+
+            return total;
+        }
+    );
+
+
+    /*
+       Substituir referências de células
+    */
+
+    expression = expression.replace(
+        /([A-Z]+)(\d+)/g,
+
+        function(_, col, row) {
+
+            const cell =
+                getCell(
+                    Number(row) - 1,
+                    columnIndex(col)
+                );
+
+            const value =
+                parseFloat(cell.innerText);
+
+            return isNaN(value) ? 0 : value;
+        }
+    );
+
+
+    /*
+       Avaliar expressão matemática
+    */
+
+    try {
+
+        return Function(
+            '"use strict"; return (' +
+            expression +
+            ')'
+        )();
+
+    } catch {
+
+        return "#ERRO!";
+    }
+}
+
+
+/* ==========================================================
+   COLUNA → ÍNDICE
+========================================================== */
+
+function columnIndex(name) {
+
+    let result = 0;
+
+    for (let i = 0; i < name.length; i++) {
+
+        result =
+            result * 26 +
+            name.charCodeAt(i) -
+            64;
+    }
+
+    return result - 1;
+}
+
+
+/* ==========================================================
+   PEGAR CÉLULA
+========================================================== */
+
+function getCell(row, col) {
+
+    return document.querySelector(
+        `.cell[data-row="${row}"][data-col="${col}"]`
+    );
+}
+
+
+/* ==========================================================
+   TECLADO
+========================================================== */
+
+function handleKey(e) {
+
+    if (!selectedCell)
+        return;
+
+
+    let row =
+        Number(this.dataset.row);
+
+    let col =
+        Number(this.dataset.col);
+
+
+    if (e.key === "Enter") {
+
+        e.preventDefault();
+
+        const next =
+            getCell(row + 1, col);
+
+        if (next)
+            selectCell(next);
+
+    }
+
+
+    if (e.key === "Tab") {
+
+        e.preventDefault();
+
+        const next =
+            getCell(row, col + 1);
+
+        if (next)
+            selectCell(next);
+
+    }
+
+
+    if (
+        e.key === "ArrowDown" &&
+        e.ctrlKey
+    ) {
+
+        e.preventDefault();
+
+        const next =
+            getCell(row + 1, col);
+
+        if (next)
+            selectCell(next);
+    }
+
+}
+
+
+/* ==========================================================
+   FORMATAÇÃO
+========================================================== */
+
+function formatCell(type) {
+
+    if (!selectedCell)
+        return;
+
+    if (type === "bold") {
+
+        selectedCell.style.fontWeight =
+            selectedCell.style.fontWeight === "bold"
+            ? "normal"
+            : "bold";
+    }
+
+    if (type === "italic") {
+
+        selectedCell.style.fontStyle =
+            selectedCell.style.fontStyle === "italic"
+            ? "normal"
+            : "italic";
+    }
+
+    saveLocal();
+}
+
+
+function alignCell(alignment) {
+
+    if (!selectedCell)
+        return;
+
+    selectedCell.style.textAlign =
+        alignment;
+
+    saveLocal();
+}
+
+
+/* ==========================================================
+   LIMPAR CÉLULA
+========================================================== */
+
+function clearCell() {
+
+    if (!selectedCell)
+        return;
+
+    selectedCell.innerText = "";
+
+    selectedCell.dataset.formula = "";
+
+    saveLocal();
+
+    updateFormulaBar(selectedCell);
+}
+
+
+/* ==========================================================
+   ADICIONAR LINHA
+========================================================== */
+
+function addRow() {
+
+    rows++;
+
+    createSheet();
+
+}
+
+
+/* ==========================================================
+   ADICIONAR COLUNA
+========================================================== */
+
+function addColumn() {
+
+    cols++;
+
+    document
+        .querySelector(".sheet")
+        .style.gridTemplateColumns =
+        `50px repeat(${cols}, 120px)`;
+
+    createSheet();
+}
+
+
+/* ==========================================================
+   NOVA PLANILHA
+========================================================== */
+
+function newSpreadsheet() {
+
+    if (
+        confirm(
+            "Criar uma nova planilha?"
+        )
+    ) {
+
+        localStorage.removeItem(
+            "spreadsheet"
+        );
+
+        location.reload();
+    }
+}
+
+
+/* ==========================================================
+   SALVAR LOCALMENTE
+========================================================== */
+
+function saveLocal() {
+
+    const data = [];
+
+    document
+        .querySelectorAll(".cell")
+        .forEach(cell => {
+
+            data.push({
+
+                row: cell.dataset.row,
+
+                col: cell.dataset.col,
+
+                value: cell.innerText,
+
+                formula:
+                    cell.dataset.formula || "",
+
+                bold:
+                    cell.style.fontWeight,
+
+                italic:
+                    cell.style.fontStyle,
+
+                align:
+                    cell.style.textAlign
+            });
+
+        });
+
+
+    localStorage.setItem(
+        "spreadsheet",
+
+        JSON.stringify({
+
+            rows,
+            cols,
+
+            cells: data,
+
+            name:
+                document.getElementById(
+                    "fileName"
+                ).innerText
+        })
+    );
+
+
+    document.getElementById(
+        "status"
+    ).textContent =
+        "Salvo automaticamente";
+}
+
+
+/* ==========================================================
+   CARREGAR
+========================================================== */
+
+function loadLocal() {
+
+    const saved =
+        localStorage.getItem(
+            "spreadsheet"
+        );
+
+    if (!saved)
+        return;
+
+
+    const data =
+        JSON.parse(saved);
+
+
+    rows = data.rows;
+
+    cols = data.cols;
+
+
+    document.getElementById(
+        "fileName"
+    ).innerText =
+        data.name ||
+        "Minha Planilha";
+
+
+    createSheet();
+
+
+    data.cells.forEach(item => {
+
+        const cell =
+            getCell(
+                Number(item.row),
+                Number(item.col)
+            );
+
+        if (!cell)
+            return;
+
+
+        cell.innerText =
+            item.value;
+
+        cell.dataset.formula =
+            item.formula || "";
+
+        cell.style.fontWeight =
+            item.bold || "";
+
+        cell.style.fontStyle =
+            item.italic || "";
+
+        cell.style.textAlign =
+            item.align || "";
+    });
+}
+
+
+/* ==========================================================
+   EXPORTAR JSON
+========================================================== */
+
+function exportJSON() {
+
+    saveLocal();
+
+    const data =
+        localStorage.getItem(
+            "spreadsheet"
+        );
+
+
+    const blob =
+        new Blob(
+            [data],
+            {
+                type:
+                    "application/json"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const a =
+        document.createElement("a");
+
+    a.href = url;
+
+    a.download =
+        "minha-planilha.json";
+
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
+
+/* ==========================================================
+   IMPORTAR JSON
+========================================================== */
+
+function importJSON() {
+
+    const input =
+        document.createElement("input");
+
+    input.type = "file";
+
+    input.accept =
+        ".json";
+
+
+    input.onchange = function(e) {
+
+        const file =
+            e.target.files[0];
+
+        const reader =
+            new FileReader();
+
+
+        reader.onload =
+            function(event) {
+
+                localStorage.setItem(
+                    "spreadsheet",
+                    event.target.result
+                );
+
+                location.reload();
+            };
+
+
+        reader.readAsText(file);
+    };
+
+
+    input.click();
+}
+
+
+/* ==========================================================
+   SALVAR
+========================================================== */
+
+function saveFile() {
+
+    saveLocal();
+
+    alert(
+        "Planilha salva no navegador."
+    );
+}
+
+
+/* ==========================================================
+   DESFAZER / REFAZER
+========================================================== */
+
+function undo() {
+
+    document.execCommand(
+        "undo"
+    );
+}
+
+
+function redo() {
+
+    document.execCommand(
+        "redo"
+    );
+}
+
+
+/* ==========================================================
+   NOVA ABA
+========================================================== */
+
+function addSheet() {
+
+    const name =
+        prompt(
+            "Nome da nova planilha:"
+        );
+
+    if (!name)
+        return;
+
+
+    const tab =
+        document.createElement("div");
+
+    tab.className =
+        "tab";
+
+    tab.textContent =
+        name;
+
+
+    document
+        .querySelector(".tabs")
+        .insertBefore(
+            tab,
+            document.querySelector(
+                ".tabs button"
+            )
+        );
+
+
+    tab.onclick = function() {
+
+        document
+            .querySelectorAll(".tab")
+            .forEach(t =>
+                t.classList.remove(
+                    "active"
+                )
+            );
+
+        tab.classList.add(
+            "active"
+        );
+    };
+}
+
+
+/* ==========================================================
+   INICIALIZAÇÃO
+========================================================== */
+
+createSheet();
+
+loadLocal();
+
+
+/*
+   Selecionar A1 automaticamente
+*/
+
+const firstCell =
+    getCell(0, 0);
+
+if (firstCell)
+    selectCell(firstCell);
+
+
+</script>
+
+</body>
+</html>
+
+recebeu. Pressione a tecla Tab para inserir.
+
+Em seg., 21 de set. de 2026 às 11:39, BRUNO BENATI BOLSON <bruno.bolson@escola.pr.gov.br> escreveu:
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Minha Planilha</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #202124;
+    background: #fff;
+    overflow: hidden;
+}
+
+/* =========================
+   TOPO
+========================= */
+
+.topbar {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    border-bottom: 1px solid #dadce0;
+    gap: 18px;
+}
+
+.logo {
+    font-size: 24px;
+    color: #188038;
+    font-weight: bold;
+}
+
+.file-name {
+    font-size: 18px;
+    border: 1px solid transparent;
+    padding: 6px 8px;
+    border-radius: 4px;
+}
+
+.file-name:hover {
+    border-color: #dadce0;
+}
+
+.top-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+}
+
+button {
+    border: 1px solid #dadce0;
+    background: white;
+    padding: 7px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #f1f3f4;
+}
+
+/* =========================
+   MENU
+========================= */
+
+.menu {
+    height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 20px;
+    border-bottom: 1px solid #dadce0;
+    font-size: 14px;
+}
+
+.menu span {
+    cursor: pointer;
+}
+
+.menu span:hover {
+    background: #f1f3f4;
+}
+
+/* =========================
+   TOOLBAR
+========================= */
+
+.toolbar {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 10px;
+    border-bottom: 1px solid #dadce0;
+}
+
+.toolbar button {
+    border: none;
+    font-size: 15px;
+    min-width: 34px;
+}
+
+.toolbar select {
+    border: 1px solid transparent;
+    padding: 5px;
+}
+
+/* =========================
+   FORMULA BAR
+========================= */
+
+.formula-bar {
+    height: 42px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #dadce0;
+}
+
+.name-box {
+    width: 80px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid #dadce0;
+    font-size: 13px;
+}
+
+.fx {
+    width: 45px;
+    text-align: center;
+    font-style: italic;
+    color: #5f6368;
+}
+
+.formula-input {
+    flex: 1;
+    height: 100%;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    padding: 0 10px;
+}
+
+/* =========================
+   PLANILHA
+========================= */
+
+.sheet-wrapper {
+    height: calc(100vh - 238px);
+    overflow: auto;
+}
+
+.sheet {
+    display: grid;
+    grid-template-columns: 50px repeat(26, 120px);
+    grid-auto-rows: 30px;
+    width: max-content;
+}
+
+.corner {
+    background: #f8f9fa;
+    border-right: 1px solid #dadce0;
+    border-bottom: 1px solid #dadce0;
+    position: sticky;
+    left: 0;
+    top: 0;
+    z-index: 5;
+}
+
+.column-header {
+    background: #f8f9fa;
+    border-right: 1px solid #dadce0;
+    border-bottom: 1px solid #dadce0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 4;
+}
+
+.row-header {
+    background: #f8f9fa;
+    border-right: 1px solid #dadce0;
+    border-bottom: 1px solid #dadce0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    position: sticky;
+    left: 0;
+    z-index: 3;
+}
+
+.cell {
+    border-right: 1px solid #dadce0;
+    border-bottom: 1px solid #dadce0;
+    padding: 5px 7px;
+    outline: none;
+    white-space: nowrap;
+    overflow: hidden;
+    background: white;
+}
+
+.cell.selected {
+    outline: 2px solid #1a73e8;
+    outline-offset: -2px;
+    z-index: 2;
+}
+
+.cell:focus {
+    outline: 2px solid #1a73e8;
+}
+
+/* =========================
+   ABAS
+========================= */
+
+.tabs {
+    height: 42px;
+    border-top: 1px solid #dadce0;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    gap: 4px;
+    background: #f8f9fa;
+}
+
+.tab {
+    height: 34px;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 5px 5px 0 0;
+}
+
+.tab.active {
+    background: white;
+    border-bottom: 3px solid #188038;
+    font-weight: bold;
+}
+
+/* =========================
+   STATUS
+========================= */
+
+.status {
+    position: fixed;
+    bottom: 0;
+    right: 10px;
+    font-size: 12px;
+    color: #5f6368;
+    padding: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- TOPO -->
+<header class="topbar">
+
+    <div class="logo">▦</div>
+
+    <div
+        class="file-name"
+        contenteditable="true"
+        id="fileName">
+        Minha Planilha
+    </div>
+
+    <div class="top-actions">
+        <button onclick="saveFile()">Salvar</button>
+        <button onclick="exportJSON()">Exportar</button>
+        <button onclick="importJSON()">Importar</button>
+    </div>
+
+</header>
+
+
+<!-- MENU -->
+<nav class="menu">
+    <span onclick="newSpreadsheet()">Arquivo</span>
+    <span>Editar</span>
+    <span>Visualizar</span>
+    <span>Inserir</span>
+    <span>Formatar</span>
+    <span>Dados</span>
+    <span>Ferramentas</span>
+</nav>
+
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+
+    <button onclick="undo()">↶</button>
+    <button onclick="redo()">↷</button>
+
+    <button onclick="formatCell('bold')"><b>B</b></button>
+    <button onclick="formatCell('italic')"><i>I</i></button>
+
+    <button onclick="alignCell('left')">☰</button>
+    <button onclick="alignCell('center')">≡</button>
+    <button onclick="alignCell('right')">☷</button>
+
+    <button onclick="addRow()">+ Linha</button>
+    <button onclick="addColumn()">+ Coluna</button>
+
+    <button onclick="clearCell()">Limpar</button>
+
+</div>
+
+
+<!-- BARRA DE FÓRMULAS -->
+<div class="formula-bar">
+
+    <div class="name-box" id="nameBox">A1</div>
+
+    <div class="fx">fx</div>
+
+    <input
+        class="formula-input"
+        id="formulaInput"
+        placeholder="Digite um valor ou fórmula..."
+    >
+
+</div>
+
+
+<!-- PLANILHA -->
+<div class="sheet-wrapper">
+
+    <div class="sheet" id="sheet"></div>
+
+</div>
+
+
+<!-- ABAS -->
+<div class="tabs">
+
+    <div class="tab active">
+        Planilha 1
+    </div>
+
+    <button onclick="addSheet()">
+        +
+    </button>
+
+</div>
+
+
+<div class="status" id="status">
+    Salvo localmente
+</div>
+
+
+<script>
+
+/* ==========================================================
+   CONFIGURAÇÃO
+========================================================== */
+
+let rows = 100;
+let cols = 26;
+
+let selectedCell = null;
+
+let history = [];
+let historyIndex = -1;
+
+
+/* ==========================================================
+   CONVERSÃO DE COLUNA
+========================================================== */
+
+function columnName(index) {
+
+    let name = "";
+
+    index++;
+
+    while (index > 0) {
+
+        let remainder = (index - 1) % 26;
+
+        name = String.fromCharCode(65 + remainder) + name;
+
+        index = Math.floor((index - 1) / 26);
+    }
+
+    return name;
+}
+
+
+/* ==========================================================
+   CRIAR PLANILHA
+========================================================== */
+
+function createSheet() {
+
+    const sheet = document.getElementById("sheet");
+
+    sheet.innerHTML = "";
+
+    // canto superior
+    const corner = document.createElement("div");
+
+    corner.className = "corner";
+
+    sheet.appendChild(corner);
+
+
+    // cabeçalhos
+    for (let c = 0; c < cols; c++) {
+
+        const header = document.createElement("div");
+
+        header.className = "column-header";
+
+        header.textContent = columnName(c);
+
+        sheet.appendChild(header);
+    }
+
+
+    // linhas
+    for (let r = 0; r < rows; r++) {
+
+        const rowHeader = document.createElement("div");
+
+        rowHeader.className = "row-header";
+
+        rowHeader.textContent = r + 1;
+
+        sheet.appendChild(rowHeader);
+
+
+        for (let c = 0; c < cols; c++) {
+
+            createCell(r, c);
+        }
+    }
+}
+
+
+/* ==========================================================
+   CRIAR CÉLULA
+========================================================== */
+
+function createCell(row, col) {
+
+    const cell = document.createElement("div");
+
+    cell.className = "cell";
+
+    cell.contentEditable = true;
+
+    cell.dataset.row = row;
+
+    cell.dataset.col = col;
+
+    cell.dataset.address =
+        columnName(col) + (row + 1);
+
+
+    cell.addEventListener("click", () => {
+
+        selectCell(cell);
+
+    });
+
+
+    cell.addEventListener("input", () => {
+
+        updateFormulaBar(cell);
+
+        saveLocal();
+
+    });
+
+
+    cell.addEventListener("keydown", handleKey);
+
+
+    document.getElementById("sheet").appendChild(cell);
+}
+
+
+/* ==========================================================
+   SELECIONAR CÉLULA
+========================================================== */
+
+function selectCell(cell) {
+
+    document.querySelectorAll(".cell.selected")
+        .forEach(c => c.classList.remove("selected"));
+
+    cell.classList.add("selected");
+
+    selectedCell = cell;
+
+    document.getElementById("nameBox").textContent =
+        cell.dataset.address;
+
+    updateFormulaBar(cell);
+}
+
+
+/* ==========================================================
+   BARRA DE FÓRMULA
+========================================================== */
+
+function updateFormulaBar(cell) {
+
+    document.getElementById("formulaInput").value =
+        cell.dataset.formula || cell.innerText;
+}
+
+
+document
+.getElementById("formulaInput")
+.addEventListener("keydown", function(e) {
+
+    if (e.key === "Enter" && selectedCell) {
+
+        setCellValue(
+            selectedCell,
+            this.value
+        );
+
+        selectedCell.focus();
+    }
+
+});
+
+
+/* ==========================================================
+   VALOR DA CÉLULA
+========================================================== */
+
+function setCellValue(cell, value) {
+
+    cell.dataset.formula =
+        value.startsWith("=") ? value : "";
+
+    if (value.startsWith("=")) {
+
+        cell.innerText =
+            calculateFormula(value);
+
+    } else {
+
+        cell.innerText = value;
+    }
+
+    saveLocal();
+}
+
+
+/* ==========================================================
+   FÓRMULAS
+========================================================== */
+
+function calculateFormula(formula) {
+
+    let expression =
+        formula.substring(1);
+
+    /*
+       SUM(A1:A5)
+    */
+
+    expression = expression.replace(
+        /SUM\(([A-Z]+)(\d+):([A-Z]+)(\d+)\)/gi,
+
+        function(_, c1, r1, c2, r2) {
+
+            const startCol =
+                columnIndex(c1);
+
+            const endCol =
+                columnIndex(c2);
+
+            let total = 0;
+
+            for (
+                let r = Number(r1);
+                r <= Number(r2);
+                r++
+            ) {
+
+                for (
+                    let c = startCol;
+                    c <= endCol;
+                    c++
+                ) {
+
+                    const cell =
+                        getCell(r - 1, c);
+
+                    const value =
+                        parseFloat(cell.innerText);
+
+                    if (!isNaN(value))
+                        total += value;
+                }
+            }
+
+            return total;
+        }
+    );
+
+
+    /*
+       Substituir referências de células
+    */
+
+    expression = expression.replace(
+        /([A-Z]+)(\d+)/g,
+
+        function(_, col, row) {
+
+            const cell =
+                getCell(
+                    Number(row) - 1,
+                    columnIndex(col)
+                );
+
+            const value =
+                parseFloat(cell.innerText);
+
+            return isNaN(value) ? 0 : value;
+        }
+    );
+
+
+    /*
+       Avaliar expressão matemática
+    */
+
+    try {
+
+        return Function(
+            '"use strict"; return (' +
+            expression +
+            ')'
+        )();
+
+    } catch {
+
+        return "#ERRO!";
+    }
+}
+
+
+/* ==========================================================
+   COLUNA → ÍNDICE
+========================================================== */
+
+function columnIndex(name) {
+
+    let result = 0;
+
+    for (let i = 0; i < name.length; i++) {
+
+        result =
+            result * 26 +
+            name.charCodeAt(i) -
+            64;
+    }
+
+    return result - 1;
+}
+
+
+/* ==========================================================
+   PEGAR CÉLULA
+========================================================== */
+
+function getCell(row, col) {
+
+    return document.querySelector(
+        `.cell[data-row="${row}"][data-col="${col}"]`
+    );
+}
+
+
+/* ==========================================================
+   TECLADO
+========================================================== */
+
+function handleKey(e) {
+
+    if (!selectedCell)
+        return;
+
+
+    let row =
+        Number(this.dataset.row);
+
+    let col =
+        Number(this.dataset.col);
+
+
+    if (e.key === "Enter") {
+
+        e.preventDefault();
+
+        const next =
+            getCell(row + 1, col);
+
+        if (next)
+            selectCell(next);
+
+    }
+
+
+    if (e.key === "Tab") {
+
+        e.preventDefault();
+
+        const next =
+            getCell(row, col + 1);
+
+        if (next)
+            selectCell(next);
+
+    }
+
+
+    if (
+        e.key === "ArrowDown" &&
+        e.ctrlKey
+    ) {
+
+        e.preventDefault();
+
+        const next =
+            getCell(row + 1, col);
+
+        if (next)
+            selectCell(next);
+    }
+
+}
+
+
+/* ==========================================================
+   FORMATAÇÃO
+========================================================== */
+
+function formatCell(type) {
+
+    if (!selectedCell)
+        return;
+
+    if (type === "bold") {
+
+        selectedCell.style.fontWeight =
+            selectedCell.style.fontWeight === "bold"
+            ? "normal"
+            : "bold";
+    }
+
+    if (type === "italic") {
+
+        selectedCell.style.fontStyle =
+            selectedCell.style.fontStyle === "italic"
+            ? "normal"
+            : "italic";
+    }
+
+    saveLocal();
+}
+
+
+function alignCell(alignment) {
+
+    if (!selectedCell)
+        return;
+
+    selectedCell.style.textAlign =
+        alignment;
+
+    saveLocal();
+}
+
+
+/* ==========================================================
+   LIMPAR CÉLULA
+========================================================== */
+
+function clearCell() {
+
+    if (!selectedCell)
+        return;
+
+    selectedCell.innerText = "";
+
+    selectedCell.dataset.formula = "";
+
+    saveLocal();
+
+    updateFormulaBar(selectedCell);
+}
+
+
+/* ==========================================================
+   ADICIONAR LINHA
+========================================================== */
+
+function addRow() {
+
+    rows++;
+
+    createSheet();
+
+}
+
+
+/* ==========================================================
+   ADICIONAR COLUNA
+========================================================== */
+
+function addColumn() {
+
+    cols++;
+
+    document
+        .querySelector(".sheet")
+        .style.gridTemplateColumns =
+        `50px repeat(${cols}, 120px)`;
+
+    createSheet();
+}
+
+
+/* ==========================================================
+   NOVA PLANILHA
+========================================================== */
+
+function newSpreadsheet() {
+
+    if (
+        confirm(
+            "Criar uma nova planilha?"
+        )
+    ) {
+
+        localStorage.removeItem(
+            "spreadsheet"
+        );
+
+        location.reload();
+    }
+}
+
+
+/* ==========================================================
+   SALVAR LOCALMENTE
+========================================================== */
+
+function saveLocal() {
+
+    const data = [];
+
+    document
+        .querySelectorAll(".cell")
+        .forEach(cell => {
+
+            data.push({
+
+                row: cell.dataset.row,
+
+                col: cell.dataset.col,
+
+                value: cell.innerText,
+
+                formula:
+                    cell.dataset.formula || "",
+
+                bold:
+                    cell.style.fontWeight,
+
+                italic:
+                    cell.style.fontStyle,
+
+                align:
+                    cell.style.textAlign
+            });
+
+        });
+
+
+    localStorage.setItem(
+        "spreadsheet",
+
+        JSON.stringify({
+
+            rows,
+            cols,
+
+            cells: data,
+
+            name:
+                document.getElementById(
+                    "fileName"
+                ).innerText
+        })
+    );
+
+
+    document.getElementById(
+        "status"
+    ).textContent =
+        "Salvo automaticamente";
+}
+
+
+/* ==========================================================
+   CARREGAR
+========================================================== */
+
+function loadLocal() {
+
+    const saved =
+        localStorage.getItem(
+            "spreadsheet"
+        );
+
+    if (!saved)
+        return;
+
+
+    const data =
+        JSON.parse(saved);
+
+
+    rows = data.rows;
+
+    cols = data.cols;
+
+
+    document.getElementById(
+        "fileName"
+    ).innerText =
+        data.name ||
+        "Minha Planilha";
+
+
+    createSheet();
+
+
+    data.cells.forEach(item => {
+
+        const cell =
+            getCell(
+                Number(item.row),
+                Number(item.col)
+            );
+
+        if (!cell)
+            return;
+
+
+        cell.innerText =
+            item.value;
+
+        cell.dataset.formula =
+            item.formula || "";
+
+        cell.style.fontWeight =
+            item.bold || "";
+
+        cell.style.fontStyle =
+            item.italic || "";
+
+        cell.style.textAlign =
+            item.align || "";
+    });
+}
+
+
+/* ==========================================================
+   EXPORTAR JSON
+========================================================== */
+
+function exportJSON() {
+
+    saveLocal();
+
+    const data =
+        localStorage.getItem(
+            "spreadsheet"
+        );
+
+
+    const blob =
+        new Blob(
+            [data],
+            {
+                type:
+                    "application/json"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const a =
+        document.createElement("a");
+
+    a.href = url;
+
+    a.download =
+        "minha-planilha.json";
+
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
+
+/* ==========================================================
+   IMPORTAR JSON
+========================================================== */
+
+function importJSON() {
+
+    const input =
+        document.createElement("input");
+
+    input.type = "file";
+
+    input.accept =
+        ".json";
+
+
+    input.onchange = function(e) {
+
+        const file =
+            e.target.files[0];
+
+        const reader =
+            new FileReader();
+
+
+        reader.onload =
+            function(event) {
+
+                localStorage.setItem(
+                    "spreadsheet",
+                    event.target.result
+                );
+
+                location.reload();
+            };
+
+
+        reader.readAsText(file);
+    };
+
+
+    input.click();
+}
+
+
+/* ==========================================================
+   SALVAR
+========================================================== */
+
+function saveFile() {
+
+    saveLocal();
+
+    alert(
+        "Planilha salva no navegador."
+    );
+}
+
+
+/* ==========================================================
+   DESFAZER / REFAZER
+========================================================== */
+
+function undo() {
+
+    document.execCommand(
+        "undo"
+    );
+}
+
+
+function redo() {
+
+    document.execCommand(
+        "redo"
+    );
+}
+
+
+/* ==========================================================
+   NOVA ABA
+========================================================== */
+
+function addSheet() {
+
+    const name =
+        prompt(
+            "Nome da nova planilha:"
+        );
+
+    if (!name)
+        return;
+
+
+    const tab =
+        document.createElement("div");
+
+    tab.className =
+        "tab";
+
+    tab.textContent =
+        name;
+
+
+    document
+        .querySelector(".tabs")
+        .insertBefore(
+            tab,
+            document.querySelector(
+                ".tabs button"
+            )
+        );
+
+
+    tab.onclick = function() {
+
+        document
+            .querySelectorAll(".tab")
+            .forEach(t =>
+                t.classList.remove(
+                    "active"
+                )
+            );
+
+        tab.classList.add(
+            "active"
+        );
+    };
+}
+
+
+/* ==========================================================
+   INICIALIZAÇÃO
+========================================================== */
+
+createSheet();
+
+loadLocal();
+
+
+/*
+   Selecionar A1 automaticamente
+*/
+
+const firstCell =
+    getCell(0, 0);
+
+if (firstCell)
+    selectCell(firstCell);
+
+
+</script>
+
+</body>
+</html>
